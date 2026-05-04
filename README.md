@@ -41,6 +41,7 @@ roles y MFA opcional.
 
 ## Modulo 1 Catálogo inicial de plantillas por fabricante
 
+### Fase 1 
 
 1. Diseñar el modelo de datos para plantillas: fabricante, línea de producto, versión de
 sistema operativo, tipo de configuración (VLAN, OSPF, BGP, NAT, QoS, etc.).
@@ -56,14 +57,15 @@ envío.
 5. Implementar el endpoint POST /api/v1/templates/deploy que ejecuta la configuración
 sobre el dispositivo, captura la salida del CLI y registra el resultado en la base de datos
 de auditoría.
-Fase 2 — Interfaz de usuario
-6. Desarrollar el wizard de selección de plantilla: selector de fabricante → familia de
+### Fase 2
+
+7. Desarrollar el wizard de selección de plantilla: selector de fabricante → familia de
 producto → versión SO → tipo de configuración.
-7. Renderizar formulario dinámico con los campos requeridos por la plantilla seleccionada
+8. Renderizar formulario dinámico con los campos requeridos por la plantilla seleccionada
 (generado automáticamente desde el esquema JSON de la plantilla).
-8. Implementar el panel de previsualización con diff coloreado (verde = adiciones, rojo =
+9. Implementar el panel de previsualización con diff coloreado (verde = adiciones, rojo =
 eliminaciones) antes del despliegue.
-9. Agregar modo paso a paso: al activarlo, la plataforma presenta cada bloque de
+10. Agregar modo paso a paso: al activarlo, la plataforma presenta cada bloque de
 comandos de forma secuencial con explicación de cada instrucción, orientado a
 capacitación o procedimientos guiados.
 
@@ -105,6 +107,7 @@ de fechas configurable.
 ## Modulo 3 Analisis de trafico de voz y video
 
 ### Fase 1 — Captura y decodificación de protocolos VoIP/Video
+
 1-  Desplegar un agente de captura pasiva en puntos estratégicos de la red (mirror port /
 SPAN) usando libpcap/tshark como backend. El agente filtra y extrae únicamente tráfico
 SIP (UDP/TCP 5060, 5061) y RTP (puertos dinámicos negociados en SDP).
@@ -118,6 +121,8 @@ de flujos.
 tasa de fotogramas estimada, pérdida de I-frames y rebuffering events.
 
 ### Fase 2 — Motor de predicción de colapso
+
+
 5-  Implementar análisis de tendencias con ventana deslizante de 5 minutos sobre las
 métricas MOS y jitter. Si la tendencia supera el umbral de degradación proyectada
 (MOS < 3.5 en los próximos 2 min), disparar alerta predictiva.
@@ -174,7 +179,7 @@ cobertura.
 4-  Crear el endpoint POST /api/v1/acl/deploy que ejecuta las ACLs en los dispositivos
 seleccionados con confirmación de aplicación y registro de auditoría.
 
-###Fase 2 — Casos de uso especializados
+### Fase 2 — Casos de uso especializados
 
 5-  Implementar el asistente de ACL para VoIP: permite al ingeniero seleccionar la VLAN de
 voz y el sistema genera automáticamente las reglas para permitir SIP (UDP 5060/5061),
