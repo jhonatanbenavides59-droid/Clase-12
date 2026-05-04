@@ -41,31 +41,39 @@ roles y MFA opcional.
 
 ## Modulo 1 Catálogo inicial de plantillas por fabricante
 
-### Fase 1 
+### Fase 1 Motor de plantillas (Backend)
 
 1. Diseñar el modelo de datos para plantillas: fabricante, línea de producto, versión de
 sistema operativo, tipo de configuración (VLAN, OSPF, BGP, NAT, QoS, etc.).
+
 2. Implementar el repositorio de plantillas utilizando Jinja2 como motor de renderizado.
 Cada plantilla contiene variables dinámicas (nombre de interfaz, VLAN ID, dirección IP,
 máscara, etc.) definidas en un esquema JSON/YAML.
+
 3. Desarrollar el driver multi-vendor usando la librería NAPALM para las operaciones
 get/set y Netmiko para acceso SSH directo. Mapear cada fabricante a su driver
+
 correspondiente: cisco_ios, cisco_nxos, huawei_vrp, aruba_aoscx, paloalto_panos.
 4. Crear el endpoint REST POST /api/v1/templates/render que recibe el ID de plantilla y
 los valores de los parámetros, renderiza la configuración final y retorna el diff previo al
 envío.
+
 5. Implementar el endpoint POST /api/v1/templates/deploy que ejecuta la configuración
 sobre el dispositivo, captura la salida del CLI y registra el resultado en la base de datos
 de auditoría.
-### Fase 2
 
-7. Desarrollar el wizard de selección de plantilla: selector de fabricante → familia de
+### Fase 2 nterfaz de usuario
+
+6. Desarrollar el wizard de selección de plantilla: selector de fabricante → familia de
 producto → versión SO → tipo de configuración.
-8. Renderizar formulario dinámico con los campos requeridos por la plantilla seleccionada
+
+7. Renderizar formulario dinámico con los campos requeridos por la plantilla seleccionada
 (generado automáticamente desde el esquema JSON de la plantilla).
-9. Implementar el panel de previsualización con diff coloreado (verde = adiciones, rojo =
+
+8. Implementar el panel de previsualización con diff coloreado (verde = adiciones, rojo =
 eliminaciones) antes del despliegue.
-10. Agregar modo paso a paso: al activarlo, la plataforma presenta cada bloque de
+
+9. Agregar modo paso a paso: al activarlo, la plataforma presenta cada bloque de
 comandos de forma secuencial con explicación de cada instrucción, orientado a
 capacitación o procedimientos guiados.
 
@@ -78,12 +86,15 @@ capacitación o procedimientos guiados.
 1-  Implementar el agente de ping activo usando ICMP con intervalos configurables (default
 30 s). Registrar latencia, jitter y pérdida de paquetes en InfluxDB con tags de
 dispositivo, sitio y criticidad.
+
 2- Desarrollar el colector SNMP con Net-SNMP o pysnmp, programando el poleo de MIBs
 clave: IF-MIB (utilización de interfaces), HOST-RESOURCES-MIB (CPU/RAM), CISCOMEMORY-
 POOL-MIB, y MIBs propietarias por fabricante.
+
 3-  Crear el pipeline de ingesta: colector → Prometheus (scraping cada 15 s) → InfluxDB /
 TimescaleDB para retención histórica. Configurar reglas de alerta en Prometheus
 Alertmanager.
+
 4-   Integrar recepción de traps SNMP v2c/v3 en un listener UDP:162 que normaliza los
 eventos y los almacena en la tabla de eventos con severidad (Critical, Major, Minor,
 Warning, Info).
@@ -92,14 +103,17 @@ Warning, Info).
  5- Desarrollar el sistema de widgets con React + react-grid-layout para arrastre y
 redimensionado. Cada widget es un componente independiente que suscribe a un canal
 WebSocket específico.
+
 6-  Implementar los widgets base: Mapa topológico de red (vis.js / D3.js), Gráfica de
 utilización de ancho de banda por interfaz, Gauge de latencia/jitter/pérdida, Tabla de
 eventos en vivo con filtros, Heatmap de CPU/RAM por dispositivo, Timeline de
 disponibilidad (uptime histórico).
+
 7-  Agregar widget de captura simulada tipo Wireshark: decodificación de protocolos a partir
 de datos SNMP y NetFlow para mostrar top talkers, top aplicaciones y distribución de
 protocolos por puerto.
-Implementar exportación de reportes en PDF y CSV desde cualquier widget con rango
+
+8- Implementar exportación de reportes en PDF y CSV desde cualquier widget con rango
 de fechas configurable.
 
 <img width="786" height="267" alt="image" src="https://github.com/user-attachments/assets/6915b2c0-d369-4a16-b0b1-ae8fbea53f0d" />
@@ -111,12 +125,15 @@ de fechas configurable.
 1-  Desplegar un agente de captura pasiva en puntos estratégicos de la red (mirror port /
 SPAN) usando libpcap/tshark como backend. El agente filtra y extrae únicamente tráfico
 SIP (UDP/TCP 5060, 5061) y RTP (puertos dinámicos negociados en SDP).
+
 2-  Implementar el parser SIP que extrae: método de la solicitud (INVITE, BYE,
 REGISTER), código de respuesta, Call-ID, duración de sesión, codec negociado
 (G.711, G.729, OPUS, H.264, H.265).
+
 3-  Desarrollar el analizador RTP/RTCP que calcula en tiempo real: jitter (RFC 3550),
 pérdida de paquetes, MOS estimado (ITU-T E-Model), SSRC tracking para correlación
 de flujos.
+
 4-  Para video: parsear cabeceras RTP de streams H.264/H.265 para extraer resolución,
 tasa de fotogramas estimada, pérdida de I-frames y rebuffering events.
 
@@ -126,9 +143,11 @@ tasa de fotogramas estimada, pérdida de I-frames y rebuffering events.
 5-  Implementar análisis de tendencias con ventana deslizante de 5 minutos sobre las
 métricas MOS y jitter. Si la tendencia supera el umbral de degradación proyectada
 (MOS < 3.5 en los próximos 2 min), disparar alerta predictiva.
+
 6-  Desarrollar el mapa de flujos activos de voz/video: visualización en tiempo real de todas
 las sesiones activas con su calidad asociada (verde > 4.0 MOS, amarillo 3.0-4.0, rojo <
 3.0).
+
 7-  Integrar correlación automática con eventos de red del Módulo 2: si una sesión de voz
 se degrada en el mismo instante que un evento SNMP de congestión de interfaz, el
 sistema correlaciona ambos eventos en un único ticket de incidente.
@@ -142,9 +161,11 @@ sistema correlaciona ambos eventos en un único ticket de incidente.
 1-  Implementar descubrimiento automático de topología mediante LLDP y CDP polling vía
 SNMP. Construir el grafo de red con NetworkX (Python) almacenando nodos
 (dispositivos), aristas (enlaces), VLAN memberships y relaciones de trunk.
+
 2-  Desarrollar la visualización interactiva de topología en el frontend usando D3.js o
 Cytoscape.js, con capas separadas para Capa 2 (VLANs, STP, LAG) y Capa 3
 (subredes, rutas, protocolos de routing).
+
 3-  Sincronizar el modelo de topología cada 5 minutos y detectar cambios de estado de
 interfaces (up/down) en tiempo real mediante traps SNMP linkUp/linkDown.
 
@@ -154,10 +175,12 @@ interfaces (up/down) en tiempo real mediante traps SNMP linkUp/linkDown.
 política (ejemplo: desplegar VLAN 200 en todos los switches del piso 3) y el sistema
 genera y ejecuta los comandos en todos los dispositivos afectados de forma paralela
 usando Nornir con workers concurrentes.
+
 5-  Implementar rollback automático: antes de aplicar cualquier cambio masivo, el sistema
 toma un snapshot de la configuración actual. Si el cambio resulta en pérdida de
 conectividad (detectada por ping post-deploy), se ejecuta el rollback automáticamente
 en los dispositivos afectados.
+
 6-  Crear flujos de trabajo de recuperación automática ante fallas de STP (bucles
 detectados por BPDU storm), portfast inconsistencies y root bridge changes
 
@@ -170,12 +193,15 @@ Modulo 5 Gestión avanzada de ACLs
 1-  Diseñar el modelo de datos abstracto de regla ACL: acción (permit/deny), protocolo (IP,
 TCP, UDP, ICMP, SIP, RTP), IP origen (host, red, cualquiera), IP destino, puerto origen,
 puerto destino, dirección (inbound/outbound), interfaz de aplicación, VLAN objetivo.
+
 2-  Implementar el compilador de reglas que traduce el modelo abstracto al lenguaje nativo
 de cada fabricante: access-list para Cisco IOS, acl para Huawei VRP, ip access-list para
 Aruba AOS-CX, security policy para Palo Alto PAN-OS.
+
 3-  Desarrollar el validador de reglas que detecta: reglas redundantes, reglas sombra
 (shadowed rules que nunca serán alcanzadas), conflictos entre reglas y gaps de
 cobertura.
+
 4-  Crear el endpoint POST /api/v1/acl/deploy que ejecuta las ACLs en los dispositivos
 seleccionados con confirmación de aplicación y registro de auditoría.
 
@@ -185,9 +211,11 @@ seleccionados con confirmación de aplicación y registro de auditoría.
 voz y el sistema genera automáticamente las reglas para permitir SIP (UDP 5060/5061),
 RTP (rango dinámico configurable, default 16384-32767) y RTCP, mientras deniega el
 resto del tráfico no autorizado hacia esa VLAN.
+
 6-  Desarrollar la vista de matriz de conectividad: visualización bidimensional que muestra
 qué VLANs/subredes pueden comunicarse entre sí según las ACLs vigentes, facilitando
 auditorías de segmentación.
+
 7-  Integrar análisis de hit count: mediante SNMP o polling CLI, el sistema obtiene los
 contadores de matches de cada entrada ACL y alerta sobre reglas con cero hits en los
 últimos N días (candidatas a eliminación) o con picos inusuales de tráfico denegado.
