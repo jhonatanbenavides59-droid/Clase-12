@@ -41,7 +41,7 @@ roles y MFA opcional.
 
 ## Modulo 1 Catálogo inicial de plantillas por fabricante
 
-Fase 1 — Motor de plantillas (Backend)
+
 1. Diseñar el modelo de datos para plantillas: fabricante, línea de producto, versión de
 sistema operativo, tipo de configuración (VLAN, OSPF, BGP, NAT, QoS, etc.).
 2. Implementar el repositorio de plantillas utilizando Jinja2 como motor de renderizado.
@@ -68,3 +68,91 @@ comandos de forma secuencial con explicación de cada instrucción, orientado a
 capacitación o procedimientos guiados.
 
 <img width="791" height="341" alt="image" src="https://github.com/user-attachments/assets/47c2373b-867c-420f-aa55-9286a80e0873" />
+
+
+## Modulo 2 Dashboard de monitoreo en tiemo real
+
+### Fase 1 — Recolección de métricas
+1-  Implementar el agente de ping activo usando ICMP con intervalos configurables (default
+30 s). Registrar latencia, jitter y pérdida de paquetes en InfluxDB con tags de
+dispositivo, sitio y criticidad.
+2- Desarrollar el colector SNMP con Net-SNMP o pysnmp, programando el poleo de MIBs
+clave: IF-MIB (utilización de interfaces), HOST-RESOURCES-MIB (CPU/RAM), CISCOMEMORY-
+POOL-MIB, y MIBs propietarias por fabricante.
+3-  Crear el pipeline de ingesta: colector → Prometheus (scraping cada 15 s) → InfluxDB /
+TimescaleDB para retención histórica. Configurar reglas de alerta en Prometheus
+Alertmanager.
+4-   Integrar recepción de traps SNMP v2c/v3 en un listener UDP:162 que normaliza los
+eventos y los almacena en la tabla de eventos con severidad (Critical, Major, Minor,
+Warning, Info).
+
+### Fase 2 — Motor de widgets y visualización
+ 5- Desarrollar el sistema de widgets con React + react-grid-layout para arrastre y
+redimensionado. Cada widget es un componente independiente que suscribe a un canal
+WebSocket específico.
+6-  Implementar los widgets base: Mapa topológico de red (vis.js / D3.js), Gráfica de
+utilización de ancho de banda por interfaz, Gauge de latencia/jitter/pérdida, Tabla de
+eventos en vivo con filtros, Heatmap de CPU/RAM por dispositivo, Timeline de
+disponibilidad (uptime histórico).
+7-  Agregar widget de captura simulada tipo Wireshark: decodificación de protocolos a partir
+de datos SNMP y NetFlow para mostrar top talkers, top aplicaciones y distribución de
+protocolos por puerto.
+Implementar exportación de reportes en PDF y CSV desde cualquier widget con rango
+de fechas configurable.
+
+<img width="786" height="267" alt="image" src="https://github.com/user-attachments/assets/6915b2c0-d369-4a16-b0b1-ae8fbea53f0d" />
+
+## Modulo 3 Analisis de trafico de voz y video
+
+### Fase 1 — Captura y decodificación de protocolos VoIP/Video
+1-  Desplegar un agente de captura pasiva en puntos estratégicos de la red (mirror port /
+SPAN) usando libpcap/tshark como backend. El agente filtra y extrae únicamente tráfico
+SIP (UDP/TCP 5060, 5061) y RTP (puertos dinámicos negociados en SDP).
+2-  Implementar el parser SIP que extrae: método de la solicitud (INVITE, BYE,
+REGISTER), código de respuesta, Call-ID, duración de sesión, codec negociado
+(G.711, G.729, OPUS, H.264, H.265).
+3-  Desarrollar el analizador RTP/RTCP que calcula en tiempo real: jitter (RFC 3550),
+pérdida de paquetes, MOS estimado (ITU-T E-Model), SSRC tracking para correlación
+de flujos.
+4-  Para video: parsear cabeceras RTP de streams H.264/H.265 para extraer resolución,
+tasa de fotogramas estimada, pérdida de I-frames y rebuffering events.
+
+### Fase 2 — Motor de predicción de colapso
+5-  Implementar análisis de tendencias con ventana deslizante de 5 minutos sobre las
+métricas MOS y jitter. Si la tendencia supera el umbral de degradación proyectada
+(MOS < 3.5 en los próximos 2 min), disparar alerta predictiva.
+6-  Desarrollar el mapa de flujos activos de voz/video: visualización en tiempo real de todas
+las sesiones activas con su calidad asociada (verde > 4.0 MOS, amarillo 3.0-4.0, rojo <
+3.0).
+7-  Integrar correlación automática con eventos de red del Módulo 2: si una sesión de voz
+se degrada en el mismo instante que un evento SNMP de congestión de interfaz, el
+sistema correlaciona ambos eventos en un único ticket de incidente.
+
+<img width="791" height="298" alt="image" src="https://github.com/user-attachments/assets/65b84b44-86af-4b38-9a26-30dd7899a6c6" />
+
+# Modulo 4 Gestión automatizada de capa 2 y 3 
+
+### Fase 1 — Descubrimiento y modelado de topología
+
+1-  Implementar descubrimiento automático de topología mediante LLDP y CDP polling vía
+SNMP. Construir el grafo de red con NetworkX (Python) almacenando nodos
+(dispositivos), aristas (enlaces), VLAN memberships y relaciones de trunk.
+2-  Desarrollar la visualización interactiva de topología en el frontend usando D3.js o
+Cytoscape.js, con capas separadas para Capa 2 (VLANs, STP, LAG) y Capa 3
+(subredes, rutas, protocolos de routing).
+3-  Sincronizar el modelo de topología cada 5 minutos y detectar cambios de estado de
+interfaces (up/down) en tiempo real mediante traps SNMP linkUp/linkDown.
+
+### Fase 2 — Automatización de configuración masiva
+
+4-  Desarrollar el motor de políticas de configuración masiva: el ingeniero define una
+política (ejemplo: desplegar VLAN 200 en todos los switches del piso 3) y el sistema
+genera y ejecuta los comandos en todos los dispositivos afectados de forma paralela
+usando Nornir con workers concurrentes.
+5-  Implementar rollback automático: antes de aplicar cualquier cambio masivo, el sistema
+toma un snapshot de la configuración actual. Si el cambio resulta en pérdida de
+conectividad (detectada por ping post-deploy), se ejecuta el rollback automáticamente
+en los dispositivos afectados.
+6-  Crear flujos de trabajo de recuperación automática ante fallas de STP (bucles
+detectados por BPDU storm), portfast inconsistencies y root bridge changes
+
