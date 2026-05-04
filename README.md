@@ -15,3 +15,26 @@ Crear una plataforma WEB, dame el paso a paso que se debería tener para la crea
 - Todos los módulos deben tener sistema de alerta según los parámetros que se configuren de manera manual o tomando como base los análisis del dahsboard  
 
 Teniendo en cuenta el promt inicial, crear un paso a paso mas técnico para de cómo se crearía la plataforma WEB, dale una estructura mas real de como serían los módulos y las configuraciones de cada uno, luego redacta un párrafo por cada uno con el fin de crear un documento de Word para presentación de proyecto ante jefes de una área de teleco
+
+# Resultado 
+
+## Stack tecnológico propuesto
+
+<img width="1060" height="603" alt="image" src="https://github.com/user-attachments/assets/4a78e775-7c19-4418-9acc-5d72840034bb" />
+
+###
+Principios de diseño 
+• Arquitectura modular desacoplada: cada módulo expone su propia API REST interna.
+
+• Multi-vendor abstraction layer: capa de abstracción que normaliza comandos para Cisco
+IOS/NX-OS, Huawei VRP, Aruba AOS-CX, HP Comware y Palo Alto PAN-OS.
+
+• Event-driven alerts: motor de reglas basado en umbrales configurables con
+disparadores en tiempo real.
+
+• Audit trail completo: toda acción de configuración queda registrada con timestamp,
+usuario y diff del cambio.
+
+• Seguridad por capas: cifrado en tránsito (TLS 1.3), cifrado en reposo, segmentación de
+roles y MFA opcional.
+
