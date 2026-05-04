@@ -38,3 +38,33 @@ usuario y diff del cambio.
 • Seguridad por capas: cifrado en tránsito (TLS 1.3), cifrado en reposo, segmentación de
 roles y MFA opcional.
 
+
+## Modulo 1 Catálogo inicial de plantillas por fabricante
+
+Fase 1 — Motor de plantillas (Backend)
+1. Diseñar el modelo de datos para plantillas: fabricante, línea de producto, versión de
+sistema operativo, tipo de configuración (VLAN, OSPF, BGP, NAT, QoS, etc.).
+2. Implementar el repositorio de plantillas utilizando Jinja2 como motor de renderizado.
+Cada plantilla contiene variables dinámicas (nombre de interfaz, VLAN ID, dirección IP,
+máscara, etc.) definidas en un esquema JSON/YAML.
+3. Desarrollar el driver multi-vendor usando la librería NAPALM para las operaciones
+get/set y Netmiko para acceso SSH directo. Mapear cada fabricante a su driver
+correspondiente: cisco_ios, cisco_nxos, huawei_vrp, aruba_aoscx, paloalto_panos.
+4. Crear el endpoint REST POST /api/v1/templates/render que recibe el ID de plantilla y
+los valores de los parámetros, renderiza la configuración final y retorna el diff previo al
+envío.
+5. Implementar el endpoint POST /api/v1/templates/deploy que ejecuta la configuración
+sobre el dispositivo, captura la salida del CLI y registra el resultado en la base de datos
+de auditoría.
+Fase 2 — Interfaz de usuario
+6. Desarrollar el wizard de selección de plantilla: selector de fabricante → familia de
+producto → versión SO → tipo de configuración.
+7. Renderizar formulario dinámico con los campos requeridos por la plantilla seleccionada
+(generado automáticamente desde el esquema JSON de la plantilla).
+8. Implementar el panel de previsualización con diff coloreado (verde = adiciones, rojo =
+eliminaciones) antes del despliegue.
+9. Agregar modo paso a paso: al activarlo, la plataforma presenta cada bloque de
+comandos de forma secuencial con explicación de cada instrucción, orientado a
+capacitación o procedimientos guiados.
+
+<img width="791" height="341" alt="image" src="https://github.com/user-attachments/assets/47c2373b-867c-420f-aa55-9286a80e0873" />
