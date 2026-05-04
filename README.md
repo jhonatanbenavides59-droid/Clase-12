@@ -156,3 +156,59 @@ en los dispositivos afectados.
 6-  Crear flujos de trabajo de recuperación automática ante fallas de STP (bucles
 detectados por BPDU storm), portfast inconsistencies y root bridge changes
 
+<img width="773" height="260" alt="image" src="https://github.com/user-attachments/assets/2cca493e-0c20-4858-8d89-7e4cc676a002" />
+
+Modulo 5 Gestión avanzada de ACLs
+
+### Fase 1 — Motor de políticas de ACL
+
+1-  Diseñar el modelo de datos abstracto de regla ACL: acción (permit/deny), protocolo (IP,
+TCP, UDP, ICMP, SIP, RTP), IP origen (host, red, cualquiera), IP destino, puerto origen,
+puerto destino, dirección (inbound/outbound), interfaz de aplicación, VLAN objetivo.
+2-  Implementar el compilador de reglas que traduce el modelo abstracto al lenguaje nativo
+de cada fabricante: access-list para Cisco IOS, acl para Huawei VRP, ip access-list para
+Aruba AOS-CX, security policy para Palo Alto PAN-OS.
+3-  Desarrollar el validador de reglas que detecta: reglas redundantes, reglas sombra
+(shadowed rules que nunca serán alcanzadas), conflictos entre reglas y gaps de
+cobertura.
+4-  Crear el endpoint POST /api/v1/acl/deploy que ejecuta las ACLs en los dispositivos
+seleccionados con confirmación de aplicación y registro de auditoría.
+
+###Fase 2 — Casos de uso especializados
+
+5-  Implementar el asistente de ACL para VoIP: permite al ingeniero seleccionar la VLAN de
+voz y el sistema genera automáticamente las reglas para permitir SIP (UDP 5060/5061),
+RTP (rango dinámico configurable, default 16384-32767) y RTCP, mientras deniega el
+resto del tráfico no autorizado hacia esa VLAN.
+6-  Desarrollar la vista de matriz de conectividad: visualización bidimensional que muestra
+qué VLANs/subredes pueden comunicarse entre sí según las ACLs vigentes, facilitando
+auditorías de segmentación.
+7-  Integrar análisis de hit count: mediante SNMP o polling CLI, el sistema obtiene los
+contadores de matches de cada entrada ACL y alerta sobre reglas con cero hits en los
+últimos N días (candidatas a eliminación) o con picos inusuales de tráfico denegado.
+
+<img width="788" height="305" alt="image" src="https://github.com/user-attachments/assets/5a05849f-e2f4-43e6-b424-a60c4fbadeb9" />
+
+## Sistema transversal de alertas
+
+Ees un componente transversal que opera de forma
+integrada con todos los módulos de la plataforma. Su diseño está basado en un motor de
+reglas configurable que evalúa continuamente las métricas recolectadas por los agentes de
+monitoreo y dispara notificaciones cuando se superan los umbrales definidos, ya sea de forma
+manual por el operador o a partir de las recomendaciones generadas automáticamente por el
+análisis de línea base del dashboard. Las alertas se clasifican por severidad, se correlacionan
+entre módulos para reducir el ruido operacional y se enrutan hacia los canales de notificación
+seleccionados por el equipo de telecomunicaciones.
+
+### Canales de notificación soportados
+
+- Correo electrónico (SMTP): con plantilla HTML configurable por severidad.
+- SMS / WhatsApp Business API: para alertas Critical y Major.
+- Webhook genérico: integración con plataformas como Slack, Microsoft Teams,
+PagerDuty, ServiceNow.
+- Panel de notificaciones en la plataforma: centro de notificaciones en tiempo real via
+WebSocket.
+- Ticketing automático: creación de incidente en el sistema ITSM de la organización vía
+REST API.
+
+<img width="796" height="355" alt="image" src="https://github.com/user-attachments/assets/a3a98c42-a36b-4094-989d-02c2366c08b9" />
