@@ -212,3 +212,8 @@ WebSocket.
 REST API.
 
 <img width="796" height="355" alt="image" src="https://github.com/user-attachments/assets/a3a98c42-a36b-4094-989d-02c2366c08b9" />
+
+# Plan de implementación 
+
+<img width="794" height="454" alt="image" src="https://github.com/user-attachments/assets/b4c21a78-104c-4e20-b18e-2440f6847073" />
+
